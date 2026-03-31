@@ -86,4 +86,12 @@ This is the place for you to write reflections:
 
 #### Reflection Subscriber-1
 
+**1\. In this tutorial, we used RwLock<> to synchronise the use of Vec of Notifications. Explain why it is necessary for this case, and explain why we do not use Mutex<> instead?**
+
+RwLock<> (Read-Write Lock) is necessary to ensure thread safety when multiple requests hit the server concurrently, preventing data races when accessing the global Vec. We use RwLock<> instead of Mutex<> because of our access pattern. Mutex<> locks the data completely, allowing only one thread to access it at a time (whether reading or writing). RwLock<>, on the other hand, allows **multiple readers** to access the data simultaneously as long as no one is writing. Since viewing notifications (list\_all\_as\_string) happens frequently and doesn't modify data, RwLock<> is much more performant. It only exclusively locks the thread when a new notification is being added (write()).
+
+**2\. In this tutorial, we used lazy\_static external library to define Vec and DashMap as a “static” variable. Compared to Java where we can mutate the content of a static variable via a static function, why did not Rust allow us to do so?**
+
+Rust prioritizes memory safety and guarantees the prevention of data races at compile time. Global mutable variables (like standard static mut in Rust or typical static variables in Java) are inherently unsafe in a multi-threaded environment because multiple threads could attempt to modify the variable at the exact same time, leading to corrupted data or crashes. To enforce safety, Rust requires global static variables to be immutable by default. To mutate them, we must use "interior mutability" via thread-safe synchronization primitives like RwLock or Mutex. lazy\_static is used because Rust traditionally does not allow complex, heap-allocated initializations (like Vec::new() or DashMap::new()) in standard static declarations. lazy\_static safely delays this initialization until the exact moment the variable is first accessed at runtime.
+
 #### Reflection Subscriber-2
